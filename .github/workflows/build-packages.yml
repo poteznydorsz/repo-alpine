@@ -46,6 +46,8 @@ jobs:
         run: |
           export PACKAGER="poteznydorsz"
           export REPODEST=/home/builder/packages
+
+          sudo chown -R builder:builder packages/
           
           for pkg in packages/*/; do
             if [ -f "$pkg/APKBUILD" ]; then
