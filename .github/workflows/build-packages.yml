@@ -39,7 +39,7 @@ jobs:
           sudo chmod a+w /var/cache/distfiles
           
           # Generate signing keys
-          sudo su builder -c "abuild-keygen -a -i -n"
+          sudo -u builder abuild-keygen -a -i -n
       
       - name: Build packages
         shell: alpine.sh {0}
@@ -51,8 +51,8 @@ jobs:
             if [ -f "$pkg/APKBUILD" ]; then
               echo "==> Building $(basename $pkg) for ${{ matrix.arch }}"
               cd "$pkg"
-              su builder -c "abuild checksum || true"
-              su builder -c "abuild -r" || echo "Failed to build $(basename $pkg)"
+              sudo -u builder abuild checksum || true
+              sudo -u builder abuild -r || echo "Failed to build $(basename $pkg)"
               cd -
             fi
           done
@@ -66,7 +66,7 @@ jobs:
           if [ -n "$(ls -A repo/${{ matrix.arch }}/*.apk 2>/dev/null)" ]; then
             cd repo/${{ matrix.arch }}
             apk index -o APKINDEX.tar.gz *.apk
-            su builder -c "abuild-sign APKINDEX.tar.gz"
+            sudo -u builder abuild-sign APKINDEX.tar.gz
           fi
       
       - name: Upload artifacts
