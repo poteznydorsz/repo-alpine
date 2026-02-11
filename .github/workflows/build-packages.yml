@@ -32,7 +32,9 @@ jobs:
         run: |
           sudo adduser -D builder
           sudo addgroup builder abuild
-          sudo echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+          sudo mkdir -p /etc/sudoers.d
+          echo "builder ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/builder > /dev/null
+          sudo chmod 0440 /etc/sudoers.d/builder
           sudo mkdir -p /var/cache/distfiles
           sudo chmod a+w /var/cache/distfiles
           
