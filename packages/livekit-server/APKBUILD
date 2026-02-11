@@ -22,3 +22,4 @@ package() {
 
 sha512sums="
 SKIP
+"
