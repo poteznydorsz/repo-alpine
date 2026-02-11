@@ -38,7 +38,7 @@ jobs:
           sudo mkdir -p /var/cache/distfiles
           sudo chmod a+w /var/cache/distfiles
 
-          sudo mkdir -p /home/builder/packages
+          # Create builder home directory with proper ownership
           sudo chown -R builder:builder /home/builder
           
           # Generate signing keys
@@ -47,14 +47,15 @@ jobs:
       - name: Build packages
         shell: alpine.sh {0}
         run: |
+          # Give builder user ownership of package directories
           sudo chown -R builder:builder packages/
           
           for pkg in packages/*/; do
             if [ -f "$pkg/APKBUILD" ]; then
               echo "==> Building $(basename $pkg) for ${{ matrix.arch }}"
               cd "$pkg"
-              sudo -u builder PACKAGER="poteznydorsz" REPODEST=/home/builder/packages abuild checksum || true
-              sudo -u builder PACKAGER="poteznydorsz" REPODEST=/home/builder/packages abuild -r || echo "Failed to build $(basename $pkg)"
+              sudo -u builder PACKAGER="poteznydorsz" REPODEST=/home/builder abuild checksum || true
+              sudo -u builder PACKAGER="poteznydorsz" REPODEST=/home/builder abuild -r || echo "Failed to build $(basename $pkg)"
               cd -
             fi
           done
@@ -63,7 +64,11 @@ jobs:
         shell: alpine.sh {0}
         run: |
           mkdir -p repo/${{ matrix.arch }}
-          find /home/builder/packages/${{ matrix.arch }}/ -name '*.apk' -exec cp {} repo/${{ matrix.arch }}/ \; || true
+          
+          # Only proceed if packages were built
+          if [ -d "/home/builder/packages/${{ matrix.arch }}" ]; then
+            find /home/builder/packages/${{ matrix.arch }}/ -name '*.apk' -exec cp {} repo/${{ matrix.arch }}/ \; || true
+          fi
           
           if [ -n "$(ls -A repo/${{ matrix.arch }}/*.apk 2>/dev/null)" ]; then
             cd repo/${{ matrix.arch }}
