@@ -37,6 +37,9 @@ jobs:
           sudo chmod 0440 /etc/sudoers.d/builder
           sudo mkdir -p /var/cache/distfiles
           sudo chmod a+w /var/cache/distfiles
+
+          sudo mkdir -p /home/builder/packages
+          sudo chown -R builder:builder /home/builder
           
           # Generate signing keys
           sudo -u builder abuild-keygen -a -i -n
@@ -44,17 +47,14 @@ jobs:
       - name: Build packages
         shell: alpine.sh {0}
         run: |
-          export PACKAGER="poteznydorsz"
-          export REPODEST=/home/builder/packages
-
           sudo chown -R builder:builder packages/
           
           for pkg in packages/*/; do
             if [ -f "$pkg/APKBUILD" ]; then
               echo "==> Building $(basename $pkg) for ${{ matrix.arch }}"
               cd "$pkg"
-              sudo -u builder abuild checksum || true
-              sudo -u builder abuild -r || echo "Failed to build $(basename $pkg)"
+              sudo -u builder PACKAGER="poteznydorsz" REPODEST=/home/builder/packages abuild checksum || true
+              sudo -u builder PACKAGER="poteznydorsz" REPODEST=/home/builder/packages abuild -r || echo "Failed to build $(basename $pkg)"
               cd -
             fi
           done
