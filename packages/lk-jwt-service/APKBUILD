@@ -1,0 +1,28 @@
+pkgname=lk-jwt-service
+pkgver=0.4.1
+pkgrel=0
+pkgdesc="Minimal service to issue LiveKit JWTs for MatrixRTC"
+url="https://github.com/element-hq/lk-jwt-service"
+arch="x86_64 aarch64"
+license="AGPL-3.0"
+options="!check" # Binary release, no tests
+
+case "$CARCH" in
+    x86_64) source="https://github.com/element-hq/lk-jwt-service/releases/download/v$pkgver/lk-jwt-service_linux_amd64" ;;
+    aarch64) source="https://github.com/element-hq/lk-jwt-service/releases/download/v$pkgver/lk-jwt-service_linux_arm64" ;;
+esac
+
+builddir="$srcdir"
+
+package() {
+    case "$CARCH" in
+        x86_64) _binary="lk-jwt-service_linux_amd64" ;;
+        aarch64) _binary="lk-jwt-service_linux_arm64" ;;
+    esac
+    
+    install -Dm755 "$builddir/$_binary" "$pkgdir/usr/bin/lk-jwt-service"
+}
+
+sha512sums="
+SKIP
+"

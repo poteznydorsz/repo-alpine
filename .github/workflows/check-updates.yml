@@ -1,0 +1,63 @@
+name: Check for Package Updates
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    outputs:
+      livekit_updated: ${{ steps.check.outputs.livekit_updated }}
+      lkjwt_updated: ${{ steps.check.outputs.lkjwt_updated }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Check for new releases
+        id: check
+        run: |
+          # Get latest versions from GitHub
+          LIVEKIT_LATEST=$(curl -s https://api.github.com/repos/livekit/livekit/releases/latest | jq -r .tag_name | sed 's/^v//')
+          LKJWT_LATEST=$(curl -s https://api.github.com/repos/element-hq/lk-jwt-service/releases/latest | jq -r .tag_name | sed 's/^v//')
+          
+          # Get current versions from APKBUILD files
+          LIVEKIT_CURRENT=$(grep '^pkgver=' packages/livekit-server/APKBUILD | cut -d= -f2)
+          LKJWT_CURRENT=$(grep '^pkgver=' packages/lk-jwt-service/APKBUILD | cut -d= -f2)
+          
+          echo "LiveKit: $LIVEKIT_CURRENT -> $LIVEKIT_LATEST"
+          echo "lk-jwt-service: $LKJWT_CURRENT -> $LKJWT_LATEST"
+          
+          # Check if updates are needed
+          if [ "$LIVEKIT_LATEST" != "$LIVEKIT_CURRENT" ]; then
+            echo "livekit_updated=true" >> $GITHUB_OUTPUT
+            sed -i "s/^pkgver=.*/pkgver=$LIVEKIT_LATEST/" packages/livekit-server/APKBUILD
+            sed -i "s/^pkgrel=.*/pkgrel=0/" packages/livekit-server/APKBUILD
+          else
+            echo "livekit_updated=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ "$LKJWT_LATEST" != "$LKJWT_CURRENT" ]; then
+            echo "lkjwt_updated=true" >> $GITHUB_OUTPUT
+            sed -i "s/^pkgver=.*/pkgver=$LKJWT_LATEST/" packages/lk-jwt-service/APKBUILD
+            sed -i "s/^pkgrel=.*/pkgrel=0/" packages/lk-jwt-service/APKBUILD
+          else
+            echo "lkjwt_updated=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit version updates
+        if: steps.check.outputs.livekit_updated == 'true' || steps.check.outputs.lkjwt_updated == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/*/APKBUILD
+          git commit -m "chore: update package versions" || exit 0
+          git push
+  
+  trigger-build:
+    needs: check-updates
+    if: needs.check-updates.outputs.livekit_updated == 'true' || needs.check-updates.outputs.lkjwt_updated == 'true'
+    uses: ./.github/workflows/build-packages.yml

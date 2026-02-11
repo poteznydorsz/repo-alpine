@@ -1,0 +1,24 @@
+pkgname=livekit-server
+pkgver=1.9.11
+pkgrel=0
+pkgdesc="End-to-end realtime stack for connecting humans and AI"
+url="https://github.com/livekit/livekit"
+arch="x86_64 aarch64 armv7"
+license="Apache-2.0"
+options="!check"
+source="https://github.com/livekit/livekit/releases/download/v$pkgver/livekit_${pkgver}_linux_amd64.tar.gz"
+
+case "$CARCH" in
+    x86_64) source="https://github.com/livekit/livekit/releases/download/v$pkgver/livekit_${pkgver}_linux_amd64.tar.gz" ;;
+    aarch64) source="https://github.com/livekit/livekit/releases/download/v$pkgver/livekit_${pkgver}_linux_arm64.tar.gz" ;;
+    armv7) source="https://github.com/livekit/livekit/releases/download/v$pkgver/livekit_${pkgver}_linux_armv7.tar.gz" ;;
+esac
+
+builddir="$srcdir"
+
+package() {
+    install -Dm755 "$builddir/livekit-server" "$pkgdir/usr/bin/livekit-server"
+}
+
+sha512sums="
+SKIP
