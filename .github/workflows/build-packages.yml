@@ -30,14 +30,14 @@ jobs:
       - name: Prepare build environment
         shell: alpine.sh {0}
         run: |
-          adduser -D builder
-          addgroup builder abuild
-          echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
-          mkdir -p /var/cache/distfiles
-          chmod a+w /var/cache/distfiles
+          sudo adduser -D builder
+          sudo addgroup builder abuild
+          sudo echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+          sudo mkdir -p /var/cache/distfiles
+          sudo chmod a+w /var/cache/distfiles
           
           # Generate signing keys
-          su builder -c "abuild-keygen -a -i -n"
+          sudo su builder -c "abuild-keygen -a -i -n"
       
       - name: Build packages
         shell: alpine.sh {0}
