@@ -71,9 +71,14 @@ jobs:
           fi
           
           if [ -n "$(ls -A repo/${{ matrix.arch }}/*.apk 2>/dev/null)" ]; then
+            # Give builder ownership of repo directory for signing
+            sudo chown -R builder:builder repo/
             cd repo/${{ matrix.arch }}
             apk index -o APKINDEX.tar.gz *.apk
             sudo -u builder abuild-sign APKINDEX.tar.gz
+            cd -
+            # Change ownership back if needed for upload
+            sudo chown -R $(whoami):$(whoami) repo/
           fi
       
       - name: Upload artifacts
