@@ -1,5 +1,5 @@
 pkgname=livekit-server
-pkgver=1.9.11
+pkgver=null
 pkgrel=0
 pkgdesc="End-to-end realtime stack for connecting humans and AI"
 url="https://github.com/livekit/livekit"
