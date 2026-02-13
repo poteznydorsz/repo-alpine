@@ -1,5 +1,5 @@
 pkgname=lk-jwt-service
-pkgver=null
+pkgver=0.4.1
 pkgrel=0
 pkgdesc="Minimal service to issue LiveKit JWTs for MatrixRTC"
 url="https://github.com/element-hq/lk-jwt-service"
